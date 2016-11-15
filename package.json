@@ -1,0 +1,11 @@
+{
+  "name": "docker_revealjs",
+  "version": "1.0.0",
+  "description": "Docker RevealJS Presentation",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Eric London",
+  "license": "MIT"
+}
