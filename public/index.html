@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Docker</title>
+
+    <link rel="stylesheet" href="bower_components/reveal.js/css/reveal.css">
+    <link rel="stylesheet" href="bower_components/reveal.js/css/theme/black.css">
+
+    <script src="bower_components/reveal.js/js/reveal.js"></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+
+    <div class="reveal">
+      <div class="slides">
+
+        <section>
+          <h2>What is Docker?</h2>
+
+          <p class="fragment">
+            Docker is an open-source project that automates the deployment of Linux applications inside software containers.
+            <a target='_blank' href='https://en.wikipedia.org/wiki/Docker_(software)'>[Wikipedia]</a>
+          </p>
+        </section>
+
+        <section>
+          <h2>As defined by Docker:</h2>
+
+          <p class='fragment'>
+            Docker containers wrap a piece of software in a complete filesystem that contains everything needed to run: code, runtime, system tools, system libraries – anything that can be installed on a server. This guarantees that the software will always run the same, regardless of its environment.
+            <a target='_blank' href='https://www.docker.com/what-docker'>[Docker.com/what-docker]</a>
+          </p>
+        </section>
+
+        <section>
+          <h2>Why is this important?</h2>
+
+          <p class='fragment'>
+            We develop on numerous platforms: OSX, Linux, and Windows.
+          </p>
+
+          <p class='fragment'>
+            Or a Windows host running an Ubuntu Linux Virtual Machine via VirtualBox (@alboxie).
+          </p>
+
+          <p class='fragment'>
+            On OSX alone, there are numerous ways to install the same package: <a target='_blank' href='http://brew.sh/'>Homebrew</a>, MacPorts, Fink, Native?
+          </p>
+
+          <p class='fragment'>
+            It's important to develop with packages that match our production environments.
+          </p>
+        </section>
+
+        <section>
+          <h2>Simple Ruby Example</h2>
+
+          <pre><code data-trim data-noescape>
+$ rvm use system
+
+$ ruby -v
+ruby 2.0.0p648 (2015-12-16 revision 53162) [universal.x86_64-darwin15]
+
+$ cd ~/Documents/repos/qdw-web
+
+$ ruby -v
+ruby 2.2.3p173 (2015-08-18 revision 51636) [x86_64-darwin14]
+
+$ rvm list known | grep '\[ruby-\]'
+[ruby-]1.8.6[-p420]
+[ruby-]1.8.7[-head] # security released on head
+[ruby-]1.9.1[-p431]
+[ruby-]1.9.2[-p330]
+[ruby-]1.9.3[-p551]
+[ruby-]2.0.0[-p648]
+[ruby-]2.1[.10]
+[ruby-]2.2[.5]
+[ruby-]2.3[.1]
+[ruby-]2.3-head
+          </code></pre>
+
+          We use <a target='_blank' href='https://rvm.io/'>Ruby Version Manager (RVM)</a> to solve this particular problem.
+        </section>
+
+        <section>
+          <h2>Similar Python Problem</h2>
+
+          Similar to Ruby, Python has <a target='_blank' href='https://virtualenvwrapper.readthedocs.io/en/latest/'>virtualenvwrapper</a>.
+
+          <pre><code data-trim data-noescape>
+$ python --version
+Python 2.7.12
+
+$ python2 [tab] [tab]
+python2           python2.6         python2.7
+python2-config    python2.6-config  python2.7-config
+
+$ sudo pip install virtualenv virtualenvwrapper
+
+$ mkvirtualenv -p /usr/bin/python2.7 my_project
+
+$ workon my_project
+
+(my_project) $ python --version
+Python 2.7.10
+
+(my_project) $ pip list
+pip (9.0.1)
+setuptools (28.8.0)
+wheel (0.30.0a0)
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>More complicated scenario</h2>
+
+          Depending on when you installed Postgresql, and how often you update Homebrew, we could all be running different versions.
+
+          <pre><code data-trim data-noescape>
+$ brew search postgresql
+homebrew/versions/postgresql93
+homebrew/versions/postgresql94
+postgresql ✔
+
+$ postgres --version
+postgres (PostgreSQL) 9.5.5
+          </code></pre>
+
+          Not to mention the different versions available via RPM or APT depending on your flavor of Linux.
+        </section>
+
+        <section>
+          <h2>Installation</h2>
+
+          <pre><code data-trim data-noescape>
+$ brew install docker docker-machine docker-compose
+
+$ docker-machine create -d virtualbox docker-machine
+
+$ docker-machine start docker-machine
+
+# put this in your shell profile, ex: ~/.profile
+$ eval $(docker-machine env docker-machine)
+          </code></pre>
+
+          Docker also provides pre-built binaries for <a target='_blank' href='https://docs.docker.com/docker-for-windows/'>Windows</a> and <a target='_blank' href='https://docs.docker.com/docker-for-mac/'>Mac</a>.
+        </section>
+
+        <section>
+          <h2>Simple Nginx Example</h2>
+
+          <pre><code data-trim data-noescape>
+$ docker run -d -p 80:80 --name webserver nginx
+
+$ docker ps -a
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS                     PORTS                         NAMES
+4f2c1de7c4f5        nginx               "nginx -g 'daemon off"   48 seconds ago      Up 48 seconds              0.0.0.0:80->80/tcp, 443/tcp   webserver
+
+$ docker exec -it webserver nginx -v
+nginx version: nginx/1.11.5
+
+$ open "http://`docker-machine ip docker-machine`:80"
+
+$ docker stop webserver
+
+$ docker rm webserver
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Simple Hadoop Example</h2>
+
+          <pre><code data-trim data-noescape>
+$ docker pull sequenceiq/hadoop-docker:2.7.1
+
+$ docker run -it sequenceiq/hadoop-docker:2.7.1 /etc/bootstrap.sh -bash
+
+$ cd $HADOOP_PREFIX
+
+$ bin/hdfs dfs -ls input | head -6
+Found 31 items
+-rw-r--r--   1 root supergroup       4436 2015-12-13 14:55 input/capacity-scheduler.xml
+-rw-r--r--   1 root supergroup       1335 2015-12-13 14:55 input/configuration.xsl
+-rw-r--r--   1 root supergroup        318 2015-12-13 14:55 input/container-executor.cfg
+-rw-r--r--   1 root supergroup        155 2015-12-13 14:55 input/core-site.xml
+-rw-r--r--   1 root supergroup        154 2015-12-13 14:55 input/core-site.xml.template
+
+$ bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.1.jar grep input output 'dfs[a-z.]+'
+
+$ bin/hdfs dfs -cat output/* | head -3
+6 dfs.audit.logger
+4 dfs.class
+3 dfs.server.namenode.
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Common commands</h2>
+
+          <pre><code data-trim data-noescape>
+# show docker containers
+$ docker ps -a
+
+# show docker images
+$ docker images
+
+# search docker hub images
+$ docker search postgresql --limit 5
+
+# pull a docker image
+$ docker pull ubuntu
+
+# run a command in a new container
+$ docker run -it postgres:9.5.4 bash
+
+# run a command in a running container
+$ docker exec -it qdwweb_redis_1 redis-cli keys '*' | wc -l
+
+# display container(s) CPU/memory stats
+$ docker stats --no-stream
+
+# list docker volumes
+$ docker volume list
+          </code></pre>
+
+          <a target='_blank' href='https://github.com/arcadia/qdw-web/wiki/Docker-Commands'>But wait, there's more!</a>
+        </section>
+
+        <section>
+          <h2>What is Docker Compose?</h2>
+
+          <p class='fragment'>
+            Compose is a tool for defining and running multi-container Docker applications.
+            <a target='_blank' href='https://docs.docker.com/compose/'>[docker.com/compose]</a>
+          </p>
+        </section>
+
+        <section>
+          <h2>Docker Compose Basics</h2>
+
+          <ul>
+            <li>Create Dockerfile</li>
+            <li>Create docker-compose.yml</li>
+            <li>docker-compose build</li>
+            <li>docker-compose up</li>
+            <li>open "http://`docker-machine ip docker-machine`:3000"</li>
+            <li>docker-compose down</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Shameless Plug</h2>
+
+          <img src='images/shameless-pug.jpg' height="300" /><br/>
+
+          <a target='_blank' href='http://ericlondon.com/2016/10/29/dockerize-rails-development-environment-integrated-with-postgresql-redis-and-elasticsearch-using-docker-compose.html'>Dockerize a Rails development environment integrated with Postgresql, Redis, and Elasticsearch using Docker Compose</a>
+        </section>
+      </div>
+    </div>
+
+    <script src="js/client.js"></script>
+  </body>
+</html>
